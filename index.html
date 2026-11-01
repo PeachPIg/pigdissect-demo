@@ -1,11 +1,11 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PigDissect S2c</title>
+<title>PigDissect S2d</title>
 <style>body{margin:0;background:#0d1520;color:#e8eef5;font-family:system-ui,sans-serif;overflow:hidden}#ui{position:absolute;top:8px;left:8px;background:#162232e6;padding:10px;border-radius:10px;max-width:260px;font-size:13px;z-index:2}#ui h1{font-size:15px;margin:0 0 6px}#ui label{display:block;margin:3px 0}#info{position:absolute;bottom:8px;left:8px;right:8px;background:#162232e6;padding:8px;border-radius:8px;font-size:13px;z-index:2}button{background:#24364d;color:#fff;border:1px solid #3a5272;border-radius:6px;padding:4px 8px;margin:2px}#load{position:absolute;top:50%;width:100%;text-align:center}</style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script></head><body>
-<div id="ui"><h1>PigDissect S2c <span style="color:#f5c26b">실제 스캔 골격</span></h1>
+<div id="ui"><h1>PigDissect S2d <span style="color:#f5c26b">실제 스캔 골격</span></h1>
 <div><button id="ko">한국어</button><button id="en">English</button></div>
 <label><input type="checkbox" id="L_scan" checked> <span data-ko="실제 스캔 골격" data-en="Real-scan skeleton"></span></label>
-<label><input type="checkbox" id="L_foot" checked> <span data-ko="발목·발 (S2c 분리)" data-en="Hock & foot (S2c)"></span></label>
+<label><input type="checkbox" id="L_foot" checked> <span data-ko="발목·발 (S2d 분리)" data-en="Hock & foot (S2d)"></span></label>
 <label><input type="checkbox" id="L_skull" checked> <span data-ko="두개골 (Dundee 스캔)" data-en="Skull (Dundee scan)"></span></label>
 <label><input type="checkbox" id="L_other"> <span data-ko="장기·근육·안구 (도식, 미검증)" data-en="Organs, muscles, eye (schematic)"></span></label>
 <div><button data-v="side">측면</button><button data-v="front">앞45°</button><button data-v="top">등쪽</button><button data-v="foot">뒷발</button></div>
@@ -18,8 +18,8 @@ const R=new THREE.WebGLRenderer({antialias:true});R.setPixelRatio(Math.min(devic
 const S=new THREE.Scene();S.background=new THREE.Color(0x0d1520);const C=new THREE.PerspectiveCamera(40,innerWidth/innerHeight,.001,1000);const O=new OrbitControls(C,R.domElement);O.enableDamping=true;
 S.add(new THREE.HemisphereLight(0xffffff,0x334455,1.6));const d=new THREE.DirectionalLight(0xffffff,2.2);d.position.set(3,5,4);S.add(d);const d2=new THREE.DirectionalLight(0xaaccff,.8);d2.position.set(-4,2,-3);S.add(d2);
 const groups={scan:[],foot:[],skull:[],other:[]};let box,ctr,sz,footBox=new THREE.Box3();
-function cls(n){if(/^(FOREFOOT|FORE|HIND|HOOF)_/.test(n))return'foot';if(/DUNDEE/.test(n))return'skull';if(/^REGION_/.test(n))return'scan';return'other'}
-new GLTFLoader().load('models/PigDissect_S2c_FootPriority_FullScene.glb',g=>{const root=g.scene;root.traverse(o=>{if(!o.isMesh)return;const n=o.name||o.parent?.name||'';const c=cls(n);o.userData.c=c;o.userData.n=n;if(!o.geometry.attributes.normal)o.geometry.computeVertexNormals();const vc=!!o.geometry.attributes.color;const old=o.material;o.material=new THREE.MeshStandardMaterial({color:vc?0xffffff:(c==='other'?0xd99a8a:0xe9dcc4),vertexColors:vc,roughness:.6,metalness:0,side:THREE.DoubleSide});old?.dispose?.();groups[c].push(o);if(c==='foot'&&/^HIND/.test(n))footBox.expandByObject(o)});
+function cls(n){if(/^(FOREFOOT|FORE|HIND|HOOF)_/.test(n))return'foot';if(/DUNDEE/.test(n))return'skull';if(/^(REGION|VERT|RIB|STERNUM)_/.test(n))return'scan';return'other'}
+new GLTFLoader().load('models/PigDissect_S2d_FullScene_LOW.glb',g=>{const root=g.scene;root.traverse(o=>{if(!o.isMesh)return;const n=o.name||o.parent?.name||'';const c=cls(n);o.userData.c=c;o.userData.n=n;if(!o.geometry.attributes.normal)o.geometry.computeVertexNormals();const vc=!!o.geometry.attributes.color;const old=o.material;o.material=new THREE.MeshStandardMaterial({color:vc?0xffffff:(c==='other'?0xd99a8a:0xe9dcc4),vertexColors:vc,roughness:.6,metalness:0,side:THREE.DoubleSide});old?.dispose?.();groups[c].push(o);if(c==='foot'&&/^HIND/.test(n))footBox.expandByObject(o)});
 S.add(root);box=new THREE.Box3();for(const k of['scan','foot','skull'])for(const m of groups[k])box.expandByObject(m);ctr=box.getCenter(new THREE.Vector3());sz=box.getSize(new THREE.Vector3()).length();upd();view('side');load.remove()},x=>{load.textContent='GLB 로딩 중… '+Math.round(x.loaded/1e6)+' MB'},e=>{load.textContent='로딩 실패: '+e.message});
 function upd(){for(const k in groups){const on=document.getElementById('L_'+k).checked;groups[k].forEach(m=>m.visible=on)}}
 ['scan','foot','skull','other'].forEach(k=>document.getElementById('L_'+k).onchange=upd);
